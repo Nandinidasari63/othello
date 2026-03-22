@@ -19,6 +19,19 @@ const directions = [
   [-1, 1],
   [-1, -1],
 ];
+const hasAnyValidMove = (player) => {
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      if (
+        gameBoard[row][col] === null &&
+        isValidMove(row, col, player)
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
 
 const flipDiscs = (flips, player) => {
   flips.forEach(([r, c]) => {
@@ -121,7 +134,18 @@ const startGame = () => {
     flipDiscs(flips, currentPlayer);
 
     currentPlayer = currentPlayer === "black" ? "white" : "black";
+    if (!hasAnyValidMove(currentPlayer)) {
+      alert(`${currentPlayer} has no valid moves. Skipping turn.`);
 
+      currentPlayer = currentPlayer === "black" ? "white" : "black";
+    }
+
+    if (
+      !hasAnyValidMove("black") &&
+      !hasAnyValidMove("white")
+    ) {
+      alert("game over");
+    }
     showValidMoves(currentPlayer);
     updateGameInfo(currentPlayer);
   });
