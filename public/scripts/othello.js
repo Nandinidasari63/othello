@@ -8,21 +8,7 @@ import {
 } from "./renderer.js";
 
 const size = 50;
-const getWinner = () => {
-  let black = 0;
-  let white = 0;
 
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      if (gameBoard[row][col] === "black") black++;
-      if (gameBoard[row][col] === "white") white++;
-    }
-  }
-
-  if (black > white) return "Black wins!";
-  if (white > black) return "White wins!";
-  return "It's a draw!";
-};
 const directions = [
   [0, 1],
   [0, -1],
@@ -33,13 +19,35 @@ const directions = [
   [-1, 1],
   [-1, -1],
 ];
+
+const checkDirection = (row, col, dx, dy, player) => {
+  const opponent = player === "black" ? "white" : "black";
+  let r = row + dx;
+  let c = col + dy;
+
+  if (r < 0 || r >= 8 || c < 0 || c >= 8 || gameBoard[r][c] !== opponent) {
+    return false;
+  }
+
+  while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+    if (gameBoard[r][c] === null) return false;
+    if (gameBoard[r][c] === player) return true;
+    r += dx;
+    c += dy;
+  }
+  return false;
+};
+
+const isValidMove = (row, col, player) => {
+  return directions.some(([dx, dy]) =>
+    checkDirection(row, col, dx, dy, player)
+  );
+};
+
 const hasAnyValidMove = (player) => {
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
-      if (
-        gameBoard[row][col] === null &&
-        isValidMove(row, col, player)
-      ) {
+      if (gameBoard[row][col] === null && isValidMove(row, col, player)) {
         return true;
       }
     }
@@ -53,6 +61,7 @@ const flipDiscs = (flips, player) => {
     renderDisc(r, c, player);
   });
 };
+
 const updateGameInfo = (player) => {
   const blackCount = gameBoard.flat().filter((c) => c === "black").length;
   const whiteCount = gameBoard.flat().filter((c) => c === "white").length;
@@ -63,6 +72,19 @@ const updateGameInfo = (player) => {
     player.charAt(0).toUpperCase() + player.slice(1)
   }'s turn`;
 };
+
+const showValidMoves = (player) => {
+  clearHighlights();
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      if (gameBoard[row][col] === null && isValidMove(row, col, player)) {
+        highlightCell(row, col, player);
+      }
+    }
+  }
+};
+
 const initializeGame = () => {
   gameBoard[3][3] = "white";
   gameBoard[3][4] = "black";
@@ -75,49 +97,21 @@ const initializeGame = () => {
   renderDisc(4, 4, "white");
 };
 
-const checkDirection = (row, col, dx, dy, player) => {
-  const opponent = player === "black" ? "white" : "black";
-
-  let r = row + dx;
-  let c = col + dy;
-
-  if (
-    r < 0 || r >= 8 ||
-    c < 0 || c >= 8 ||
-    gameBoard[r][c] !== opponent
-  ) return false;
-
-  while (r >= 0 && r < 8 && c >= 0 && c < 8) {
-    if (gameBoard[r][c] === null) return false;
-    if (gameBoard[r][c] === player) return true;
-
-    r += dx;
-    c += dy;
-  }
-
-  return false;
-};
-
-const isValidMove = (row, col, player) => {
-  return directions.some(([dx, dy]) =>
-    checkDirection(row, col, dx, dy, player)
-  );
-};
-
-const showValidMoves = (player) => {
-  clearHighlights();
-
+const restartGame = () => {
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
-      if (
-        gameBoard[row][col] === null &&
-        isValidMove(row, col, player)
-      ) {
-        highlightCell(row, col, player);
-      }
+      gameBoard[row][col] = null;
     }
   }
+
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  document.getElementById("score").textContent = "";
+  document.getElementById("turn").textContent = "";
+
+  startGame();
 };
+
 const displayWinner = () => {
   const blackCount = gameBoard.flat().filter((c) => c === "black").length;
   const whiteCount = gameBoard.flat().filter((c) => c === "white").length;
@@ -137,20 +131,23 @@ const displayWinner = () => {
       : "It's a tie!"
   }
   `;
+
   const turnDiv = document.getElementById("turn");
   turnDiv.innerHTML =
     `<button id="restartBtn" style="margin-top:10px; font-size:16px;">Restart Game</button>`;
 
   document.getElementById("restartBtn").addEventListener("click", restartGame);
 };
+
 const startGame = () => {
   renderBoardUI();
+  initializeGame();
 
   let currentPlayer = "black";
 
   const board = document.getElementById("board");
 
-  board.addEventListener("click", (e) => {
+  const handleBoardClick = (e) => {
     const col = Math.floor(e.offsetX / size);
     const row = Math.floor(e.offsetY / size);
 
@@ -164,21 +161,22 @@ const startGame = () => {
     flipDiscs(flips, currentPlayer);
 
     currentPlayer = currentPlayer === "black" ? "white" : "black";
+
     if (!hasAnyValidMove(currentPlayer)) {
       currentPlayer = currentPlayer === "black" ? "white" : "black";
     }
 
-    if (
-      !hasAnyValidMove("black") &&
-      !hasAnyValidMove("white")
-    ) {
+    if (!hasAnyValidMove("black") && !hasAnyValidMove("white")) {
       displayWinner();
+      return;
     }
+
     showValidMoves(currentPlayer);
     updateGameInfo(currentPlayer);
-  });
+  };
 
-  initializeGame();
+  board.addEventListener("click", handleBoardClick);
+
   showValidMoves(currentPlayer);
   updateGameInfo(currentPlayer);
 };
