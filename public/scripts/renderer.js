@@ -37,9 +37,9 @@ export const renderDisc = (row, col, color) => {
 
   board.appendChild(circle);
 };
-
-export const highlightCell = (row, col) => {
+export const highlightCell = (row, col, player) => {
   const board = document.getElementById("board");
+  const size = 50;
 
   const hint = document.createElementNS(
     "http://www.w3.org/2000/svg",
@@ -48,8 +48,12 @@ export const highlightCell = (row, col) => {
 
   hint.setAttribute("cx", col * size + size / 2);
   hint.setAttribute("cy", row * size + size / 2);
-  hint.setAttribute("r", 5);
-  hint.setAttribute("fill", "lightgreen");
+  hint.setAttribute("r", size / 2 - 10);
+
+  hint.setAttribute("fill", "none"); // no fill
+  hint.setAttribute("stroke", player); // black or white
+  hint.setAttribute("stroke-width", "2");
+
   hint.setAttribute("class", "hint");
 
   board.appendChild(hint);

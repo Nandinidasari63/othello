@@ -1,4 +1,5 @@
 import { gameBoard } from "./boardState.js";
+import { getAllFlips } from "./flipLogic.js";
 import {
   clearHighlights,
   highlightCell,
@@ -18,6 +19,13 @@ const directions = [
   [-1, 1],
   [-1, -1],
 ];
+
+const flipDiscs = (flips, player) => {
+  flips.forEach(([r, c]) => {
+    gameBoard[r][c] = player;
+    renderDisc(r, c, player);
+  });
+};
 
 const initializeGame = () => {
   gameBoard[3][3] = "white";
@@ -69,7 +77,7 @@ const showValidMoves = (player) => {
         gameBoard[row][col] === null &&
         isValidMove(row, col, player)
       ) {
-        highlightCell(row, col);
+        highlightCell(row, col, player);
       }
     }
   }
@@ -91,6 +99,9 @@ const startGame = () => {
 
     gameBoard[row][col] = currentPlayer;
     renderDisc(row, col, currentPlayer);
+
+    const flips = getAllFlips(row, col, currentPlayer, directions);
+    flipDiscs(flips, currentPlayer);
 
     currentPlayer = currentPlayer === "black" ? "white" : "black";
 
