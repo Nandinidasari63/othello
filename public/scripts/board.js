@@ -1,3 +1,4 @@
+const gameBoard = Array.from({ length: 8 }, () => Array(8).fill(null));
 const createDisc = (row, col, color) => {
   const board = document.getElementById("board");
   const size = 50;
@@ -35,11 +36,18 @@ const renderBoard = () => {
       board.appendChild(rect);
     }
   }
+  let currentPlayer = "black";
+
   board.addEventListener("click", (e) => {
     const col = Math.floor(e.offsetX / size);
     const row = Math.floor(e.offsetY / size);
+    if (gameBoard[row][col] !== null) {
+      return;
+    }
 
-    createDisc(row, col, "black"); // always black for now
+    gameBoard[row][col] = currentPlayer;
+    createDisc(row, col, currentPlayer); // always black for now
+    currentPlayer = currentPlayer === "black" ? "white" : "black";
   });
 };
 
