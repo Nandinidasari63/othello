@@ -27,6 +27,23 @@ const flipDiscs = (flips, player) => {
   });
 };
 
+const updateGameInfo = (currentPlayer) => {
+  let black = 0;
+  let white = 0;
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      if (gameBoard[row][col] === "black") black++;
+      if (gameBoard[row][col] === "white") white++;
+    }
+  }
+
+  document.getElementById("score").textContent =
+    `Black: ${black} | White: ${white}`;
+
+  document.getElementById("turn").textContent = `Turn: ${currentPlayer}`;
+};
+
 const initializeGame = () => {
   gameBoard[3][3] = "white";
   gameBoard[3][4] = "black";
@@ -106,10 +123,12 @@ const startGame = () => {
     currentPlayer = currentPlayer === "black" ? "white" : "black";
 
     showValidMoves(currentPlayer);
+    updateGameInfo(currentPlayer);
   });
 
   initializeGame();
   showValidMoves(currentPlayer);
+  updateGameInfo(currentPlayer);
 };
 
 window.onload = startGame;
