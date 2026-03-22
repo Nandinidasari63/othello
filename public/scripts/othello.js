@@ -8,7 +8,21 @@ import {
 } from "./renderer.js";
 
 const size = 50;
+const getWinner = () => {
+  let black = 0;
+  let white = 0;
 
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      if (gameBoard[row][col] === "black") black++;
+      if (gameBoard[row][col] === "white") white++;
+    }
+  }
+
+  if (black > white) return "Black wins!";
+  if (white > black) return "White wins!";
+  return "It's a draw!";
+};
 const directions = [
   [0, 1],
   [0, -1],
@@ -39,24 +53,16 @@ const flipDiscs = (flips, player) => {
     renderDisc(r, c, player);
   });
 };
-
-const updateGameInfo = (currentPlayer) => {
-  let black = 0;
-  let white = 0;
-
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      if (gameBoard[row][col] === "black") black++;
-      if (gameBoard[row][col] === "white") white++;
-    }
-  }
+const updateGameInfo = (player) => {
+  const blackCount = gameBoard.flat().filter((c) => c === "black").length;
+  const whiteCount = gameBoard.flat().filter((c) => c === "white").length;
 
   document.getElementById("score").textContent =
-    `Black: ${black} | White: ${white}`;
-
-  document.getElementById("turn").textContent = `Turn: ${currentPlayer}`;
+    `Black: ${blackCount} | White: ${whiteCount}`;
+  document.getElementById("turn").textContent = `${
+    player.charAt(0).toUpperCase() + player.slice(1)
+  }'s turn`;
 };
-
 const initializeGame = () => {
   gameBoard[3][3] = "white";
   gameBoard[3][4] = "black";
@@ -112,7 +118,31 @@ const showValidMoves = (player) => {
     }
   }
 };
+const displayWinner = () => {
+  const blackCount = gameBoard.flat().filter((c) => c === "black").length;
+  const whiteCount = gameBoard.flat().filter((c) => c === "white").length;
 
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+
+  const scoreDiv = document.getElementById("score");
+  scoreDiv.innerHTML = `
+    Game Over! <br>
+    Black: ${blackCount} | White: ${whiteCount} <br>
+    ${
+    blackCount > whiteCount
+      ? "Black wins!"
+      : whiteCount > blackCount
+      ? "White wins!"
+      : "It's a tie!"
+  }
+  `;
+  const turnDiv = document.getElementById("turn");
+  turnDiv.innerHTML =
+    `<button id="restartBtn" style="margin-top:10px; font-size:16px;">Restart Game</button>`;
+
+  document.getElementById("restartBtn").addEventListener("click", restartGame);
+};
 const startGame = () => {
   renderBoardUI();
 
@@ -135,8 +165,6 @@ const startGame = () => {
 
     currentPlayer = currentPlayer === "black" ? "white" : "black";
     if (!hasAnyValidMove(currentPlayer)) {
-      alert(`${currentPlayer} has no valid moves. Skipping turn.`);
-
       currentPlayer = currentPlayer === "black" ? "white" : "black";
     }
 
@@ -144,7 +172,7 @@ const startGame = () => {
       !hasAnyValidMove("black") &&
       !hasAnyValidMove("white")
     ) {
-      alert("game over");
+      displayWinner();
     }
     showValidMoves(currentPlayer);
     updateGameInfo(currentPlayer);
