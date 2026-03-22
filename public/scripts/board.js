@@ -1,3 +1,19 @@
+const createDisc = (row, col, color) => {
+  const board = document.getElementById("board");
+  const size = 50;
+
+  const circle = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "circle",
+  );
+
+  circle.setAttribute("cx", col * size + size / 2);
+  circle.setAttribute("cy", row * size + size / 2);
+  circle.setAttribute("r", size / 2 - 5);
+  circle.setAttribute("fill", color);
+  board.appendChild(circle);
+};
+
 const renderBoard = () => {
   const board = document.getElementById("board");
   const size = 50;
@@ -19,6 +35,12 @@ const renderBoard = () => {
       board.appendChild(rect);
     }
   }
+  board.addEventListener("click", (e) => {
+    const col = Math.floor(e.offsetX / size);
+    const row = Math.floor(e.offsetY / size);
+
+    createDisc(row, col, "black"); // always black for now
+  });
 };
 
 window.onload = renderBoard;
